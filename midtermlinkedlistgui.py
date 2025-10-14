@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import random
 
-# --- Data Structures (from Linked List2.py) ---
+# --- Data Structures ---
 class Node:
     def __init__(self, data):
         self.data = data
@@ -140,7 +140,6 @@ class LinkedListStackGUI(tk.Tk):
         ttk.Button(parent, text="Refresh visualization", command=self.display_linked_list, style="Dark.TButton").grid(row=2, column=0, columnspan=2, padx=5, pady=10, sticky="ew")
 
     def _setup_style(self):
-        # A dark theme for the GUI
         BG_COLOR = "#121212"
         FG_COLOR = "#e0e0e0"
         FRAME_BG = "#1e1e1e"
@@ -152,7 +151,6 @@ class LinkedListStackGUI(tk.Tk):
 
         style = ttk.Style(self)
         try:
-            # 'clam' theme is best for custom styling
             style.theme_use("clam")
         except tk.TclError:
             pass
@@ -166,14 +164,14 @@ class LinkedListStackGUI(tk.Tk):
         
         style.configure("Dark.TButton", background=ACCENT_COLOR, foreground=BTN_FG, borderwidth=0, relief="flat", font=("Segoe UI", 9, "bold"))
         style.map("Dark.TButton",
-                  background=[('active', '#e67e22')], # A darker orange on hover/press
+                  background=[('active', '#e67e22')],
                   foreground=[('active', BTN_FG)])
 
     # --- Log/Output Methods ---
     def log_message(self, message):
         self.log_text.config(state="normal")
         self.log_text.insert(tk.END, message + "\n")
-        self.log_text.see(tk.END) # Scroll to the end
+        self.log_text.see(tk.END)
         self.log_text.config(state="disabled")
 
     def clear_log(self):
@@ -223,4 +221,5 @@ class LinkedListStackGUI(tk.Tk):
 
 if __name__ == "__main__":
     app = LinkedListStackGUI()
+
     app.mainloop()

@@ -61,7 +61,7 @@ class StackPage(ttk.Frame):
     def __init__(self, parent_container, main_app):
         super().__init__(parent_container, style="Main.TFrame")
         self.main_app = main_app
-        self.stack = Stack(capacity=10) # Each time we switch to this page, a new stack is created
+        self.stack = Stack(capacity=10)
         
         # --- Create the Left/Right split ---
         self.horizontal_paned_window = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
@@ -100,7 +100,7 @@ class StackPage(ttk.Frame):
         
         self.stack_btn = ttk.Button(top_btn_frame, text="Stack", command=lambda: self.main_app.switch_page("stack"))
         self.stack_btn.pack(side=tk.LEFT, expand=True, padx=2)
-        self.stack_btn.config(style="Accent.TButton") # Active page
+        self.stack_btn.config(style="Accent.TButton")
         
         # --- Stack Specific Controls ---
         ttk.Label(self.control_panel, text="Entry Node Value:").pack(pady=(20, 0))
@@ -183,7 +183,6 @@ class StackPage(ttk.Frame):
         except StackUnderflowError:
             self.main_app.log_output("Peeked: Stack is empty.")
             self.show_error_image_window("Stack Underflow", "The stack is empty. Nothing to peek at.", self.underflow_img_tk)
-        # No need to update representation for peek
 
     def search_node(self):
         """Searches for a value in the stack and shows its position."""
@@ -209,7 +208,7 @@ class StackPage(ttk.Frame):
     def update_representation(self):
         """Draws the stack blocks on the canvas (LIFO: blocks stacked vertically)."""
         self.canvas.delete("all")
-        self.show_size() # Update the size button
+        self.show_size() 
         theme = self.main_app.theme
         
         items = self.stack.to_list()
@@ -296,4 +295,5 @@ class StackPage(ttk.Frame):
         window.update_idletasks()
         x = self.main_app.winfo_x() + (self.main_app.winfo_width() // 2) - (window.winfo_width() // 2)
         y = self.main_app.winfo_y() + (self.main_app.winfo_height() // 2) - (window.winfo_height() // 2)
+
         window.geometry(f"+{x}+{y}")

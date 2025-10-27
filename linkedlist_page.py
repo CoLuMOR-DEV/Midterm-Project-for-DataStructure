@@ -37,7 +37,6 @@ class LinkedListPage(ttk.Frame):
         
         self.list_btn = ttk.Button(top_btn_frame, text="List", command=lambda: self.main_app.switch_page("list"))
         self.list_btn.pack(side=tk.LEFT, expand=True, padx=2)
-        # Apply 'accent' color to the active button
         self.list_btn.config(style="Accent.TButton") 
         
         self.recursion_btn = ttk.Button(top_btn_frame, text="Recursion Stack", command=lambda: self.main_app.switch_page("recursion"))
@@ -166,9 +165,7 @@ class LinkedListPage(ttk.Frame):
                 self.main_app.log_output(f"Failed to delete '{value}' (not found) from {list_type} list.")
         
         elif action == "random":
-            # --- THIS IS THE MODIFIED LINE ---
             random_value = random.randint(1, 100) # Generate a random integer from 1 to 10
-            # --- END MODIFICATION ---
             linked_list.add_node(random_value)
             self.main_app.log_output(f"Added random node '{random_value}' to {list_type} list.")
         
@@ -282,4 +279,5 @@ class LinkedListPage(ttk.Frame):
                 p4_x, p4_y = head_node_x - 10, start_y + node_h / 2
                 
                 self.canvas.create_line(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, p4_x, p4_y,
+
                                          smooth=True, arrow=tk.LAST, fill=theme["arrow_color"])

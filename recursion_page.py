@@ -27,8 +27,8 @@ class RecursionPage(ttk.Frame):
         
         # --- Image related attributes ---
         self.burger_image_tk = None
-        self.current_burger_ids = [] # To store canvas IDs of burger images
-        self.animation_delay_ms = 700 # Milliseconds between "pops"
+        self.current_burger_ids = [] 
+        self.animation_delay_ms = 700 
         self.spongebob_frames = []
         self.spongebob_gif_image = None
         self.spongebob_animation_job = None
@@ -55,7 +55,7 @@ class RecursionPage(ttk.Frame):
 
         self.recursion_btn = ttk.Button(top_btn_frame, text="Recursion Stack", command=lambda: self.main_app.switch_page("recursion"))
         self.recursion_btn.pack(side=tk.LEFT, expand=True, padx=2)
-        self.recursion_btn.config(style="Accent.TButton") # Active page
+        self.recursion_btn.config(style="Accent.TButton")
 
         self.stack_btn = ttk.Button(top_btn_frame, text="Stack", command=lambda: self.main_app.switch_page("stack"))
         self.stack_btn.pack(side=tk.LEFT, expand=True, padx=2)
@@ -123,7 +123,7 @@ class RecursionPage(ttk.Frame):
 
         try:
             self.spongebob_gif_image = Image.open(gif_path)
-            gif_size = (200, 150) # A good size for the center of the canvas
+            gif_size = (200, 150) 
             
             for frame in ImageSequence.Iterator(self.spongebob_gif_image):
                 resized_frame = frame.copy().resize(gif_size, Image.Resampling.LANCZOS)
@@ -136,10 +136,10 @@ class RecursionPage(ttk.Frame):
 
         except FileNotFoundError:
             self.main_app.log_output(f"Warning: spongebob.gif not found at {gif_path}. Animation will be skipped.")
-            self.spongebob_frames = [] # Ensure it's empty
+            self.spongebob_frames = []
         except Exception as e:
             self.main_app.log_output(f"Error loading spongebob.gif: {e}. Animation will be skipped.")
-            self.spongebob_frames = [] # Ensure it's empty
+            self.spongebob_frames = []
 
     def _load_patrick_gif(self):
         """Loads and resizes the patrick.gif frames."""
@@ -179,7 +179,7 @@ class RecursionPage(ttk.Frame):
         self.canvas.config(bg=theme["canvas_bg"])
         # --- Apply style to horizontal scrollbar ---
         self.canvas_h_scroll.config(style="Horizontal.TScrollbar")
-        self.update_representation() # Redraw canvas
+        self.update_representation() 
 
     def run_recursion(self, mode):
         """Simulates and visualizes a recursion function sequence."""
@@ -196,11 +196,11 @@ class RecursionPage(ttk.Frame):
         stack_data = []
         if mode == "tail":
             for i in range(1, num_elements + 1):
-                stack_data.append((i, str(i), i)) # (call_num, value, order)
+                stack_data.append((i, str(i), i))
         elif mode == "head":
             temp_calls = []
             for i in range(1, num_elements + 1):
-                temp_calls.append((i, str(i))) # (call_num, value)
+                temp_calls.append((i, str(i)))
 
             for i, (call_num, value) in enumerate(reversed(temp_calls)):
                  stack_data.append((call_num, value, i + 1)) # (call_num, value, order)
@@ -217,13 +217,11 @@ class RecursionPage(ttk.Frame):
             self.after_cancel(self.patrick_animation_job)
 
         if mode == "head":
-            # For head recursion, play the spongebob gif, then animate the appearance.
             self.canvas.delete("all") # Clear canvas first
             self.animate_spongebob(callback=lambda: self.start_head_animation(mode, stack_data))
-        else: # For tail recursion
-            # Draw everything first, then animate the pop-out.
+        else:
             self.update_representation(mode, stack_data)
-            self.animate_patrick() # Start Patrick GIF
+            self.animate_patrick()
             self._animation_job_id = self.after(1000, lambda: self.animate_pop_out(mode))
 
     def update_representation(self, mode=None, stack_data=None, draw_burgers=True):
@@ -238,11 +236,11 @@ class RecursionPage(ttk.Frame):
              return
 
         # --- Adjustments for Horizontal Layout ---
-        frame_w, frame_h = 100, 50 # Adjusted size
-        x_start, y_start = 50, 50 # New starting position
-        x_spacing = 40 # Space between frames horizontally
+        frame_w, frame_h = 100, 50 
+        x_start, y_start = 50, 50 
+        x_spacing = 40 
         
-        self.current_burger_ids = [] # Reset for new drawing
+        self.current_burger_ids = [] 
 
         title_text = ""
         if mode == "head":
@@ -259,12 +257,10 @@ class RecursionPage(ttk.Frame):
             center_y = y_start + frame_h / 2
 
             if draw_burgers:
-                # 1. Draw the burger image
                 if self.burger_image_tk:
                     burger_id = self.canvas.create_image(center_x, center_y, image=self.burger_image_tk, tags="burger_image")
                     self.current_burger_ids.append(burger_id)
                 else:
-                    # Fallback to drawing a rectangle if image not loaded
                     x1, y1 = center_x - frame_w / 2, center_y - frame_h / 2
                     x2, y2 = center_x + frame_w / 2, center_y + frame_h / 2
                     self.canvas.create_rectangle(x1, y1, x2, y2, fill=theme["node_fill"], outline=theme["node_border"], width=1)
@@ -322,14 +318,13 @@ class RecursionPage(ttk.Frame):
         x_start, y_start = 50, 50
         frame_h = 50
         center_x = self.canvas.winfo_width() / 2
-        center_y = y_start + frame_h + 100 # Position below burgers
+        center_y = y_start + frame_h + 100 
 
         gif_item = self.canvas.create_image(center_x, center_y, image=self.patrick_frames[0], tags="patrick_gif")
         
         duration_per_frame = self.patrick_gif_image.info.get('duration', 100)
 
         def _animate_frame(frame_index):
-            # Check if the item still exists before trying to update it
             if self.canvas.find_withtag(gif_item):
                 self.canvas.itemconfig(gif_item, image=self.patrick_frames[frame_index])
                 next_frame_index = (frame_index + 1) % len(self.patrick_frames)
@@ -353,10 +348,9 @@ class RecursionPage(ttk.Frame):
                     burger_id = self.canvas.create_image(center_x, center_y, image=self.burger_image_tk, tags="burger_image")
                     self.current_burger_ids.append(burger_id)
                 
-                # Schedule the next appearance
                 self._animation_job_id = self.after(self.animation_delay_ms, lambda: _step(index + 1))
 
-        _step(0) # Start the animation from the first burger
+        _step(0)
 
     def animate_pop_out(self, mode):
         """Animates the 'popping out' of burgers from the recursion sequence."""
@@ -364,9 +358,7 @@ class RecursionPage(ttk.Frame):
             return
         
         if mode == "tail":
-            # Remove from left to right (visual order)
             removal_indices = list(range(len(self.current_burger_ids)))
-        # No 'head' case needed here anymore as it uses animate_appear
         
         def _step(index):
             if index < len(removal_indices):
@@ -374,10 +366,10 @@ class RecursionPage(ttk.Frame):
                 self.canvas.delete(burger_id)
                 self._animation_job_id = self.after(self.animation_delay_ms, lambda: _step(index + 1))
             else:
-                # This is the end of the animation
                 if self.patrick_animation_job:
                     self.after_cancel(self.patrick_animation_job)
                     self.canvas.delete("patrick_gif")
                     self.patrick_animation_job = None
 
         _step(0)
+

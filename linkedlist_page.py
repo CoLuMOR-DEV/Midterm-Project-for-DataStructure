@@ -1,5 +1,3 @@
-# linkedlist_page.py
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 import random
@@ -65,9 +63,13 @@ class LinkedListPage(ttk.Frame):
     def create_list_controls(self, parent_frame, list_type):
         """Creates the common control elements for each linked list type tab."""
         
+        # --- Validation for numeric input ---
+        vcmd = (self.register(self._validate_numeric_input), '%P')
+
         ttk.Label(parent_frame, text="Node Value:").pack(pady=(10, 0))
         entry_var = tk.StringVar()
-        entry = ttk.Entry(parent_frame, textvariable=entry_var)
+        entry = ttk.Entry(parent_frame, textvariable=entry_var,
+                          validate='key', validatecommand=vcmd)
         entry.pack(fill=tk.X, padx=10, pady=5)
         setattr(self, f"{list_type}_entry_var", entry_var)
 
@@ -145,35 +147,42 @@ class LinkedListPage(ttk.Frame):
         
         if action == "append":
             if not value: return messagebox.showwarning("Input Error", "Please enter a value to append.")
-            linked_list.add_node(value)
-            self.main_app.log_output(f"Appended '{value}' to {list_type} list.")
+            linked_list.add_node(int(value))
+            self.main_app.log_output(f"Appended {value} to {list_type} list.")
             if active_entry_var: active_entry_var.set("") 
 
         elif action == "prepend":
             if not value: return messagebox.showwarning("Input Error", "Please enter a value to prepend.")
-            linked_list.prepend_node(value)
-            self.main_app.log_output(f"Prepended '{value}' to {list_type} list.")
+            linked_list.prepend_node(int(value))
+            self.main_app.log_output(f"Prepended {value} to {list_type} list.")
             if active_entry_var: active_entry_var.set("") 
 
         elif action == "delete":
             if not value: return messagebox.showwarning("Input Error", "Please enter a value to delete.")
-            if linked_list.delete_node(value):
-                self.main_app.log_output(f"Deleted '{value}' from {list_type} list.")
+            if linked_list.delete_node(int(value)):
+                self.main_app.log_output(f"Deleted {value} from {list_type} list.")
                 if active_entry_var: active_entry_var.set("") 
             else:
-                messagebox.showerror("Deletion Error", f"Node '{value}' not found in {list_type} list.")
-                self.main_app.log_output(f"Failed to delete '{value}' (not found) from {list_type} list.")
+                messagebox.showerror("Deletion Error", f"Node {value} not found in {list_type} list.")
+                self.main_app.log_output(f"Failed to delete {value} (not found) from {list_type} list.")
         
         elif action == "random":
-            random_value = random.randint(1, 100) # Generate a random integer from 1 to 10
+            random_value = random.randint(1, 100)
             linked_list.add_node(random_value)
-            self.main_app.log_output(f"Added random node '{random_value}' to {list_type} list.")
+            self.main_app.log_output(f"Added random node {random_value} to {list_type} list.")
         
         elif action == "reverse":
             linked_list.reverse()
             self.main_app.log_output(f"Reversed {list_type} list.")
         
         self.update_representation()
+
+    def _validate_numeric_input(self, P):
+        """Validates that the input is a digit or an empty string."""
+        if P.isdigit() or P == "":
+            return True
+        self.bell() # Audible feedback for invalid input
+        return False
 
     def apply_theme(self):
         """Applies the current theme from main_app to this page's widgets."""

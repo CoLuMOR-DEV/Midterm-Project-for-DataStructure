@@ -102,10 +102,15 @@ class StackPage(ttk.Frame):
         self.stack_btn.pack(side=tk.LEFT, expand=True, padx=2)
         self.stack_btn.config(style="Accent.TButton")
         
+        # --- Validation for numeric input ---
+        vcmd = (self.register(self._validate_numeric_input), '%P')
+
         # --- Stack Specific Controls ---
         ttk.Label(self.control_panel, text="Entry Node Value:").pack(pady=(20, 0))
         self.node_value_var = tk.StringVar()
-        self.node_value_entry = ttk.Entry(self.control_panel, textvariable=self.node_value_var)
+        self.node_value_entry = ttk.Entry(self.control_panel, 
+                                          textvariable=self.node_value_var,
+                                          validate='key', validatecommand=vcmd)
         self.node_value_entry.pack(fill=tk.X, padx=10, pady=5)
         
         action_btn_frame = ttk.Frame(self.control_panel)
@@ -157,10 +162,11 @@ class StackPage(ttk.Frame):
         if not value:
             messagebox.showwarning("Input Error", "Please enter a value to push onto the stack.")
             return
+        
         try:
-            self.stack.push(value)
+            self.stack.push(int(value)) # Convert to int before pushing
             self.node_value_var.set("")
-            self.main_app.log_output(f"Pushed '{value}' onto the stack.")
+            self.main_app.log_output(f"Pushed {value} onto the stack.")
             self.update_representation()
         except StackOverflowError as e:
             self.main_app.log_output(f"Failed to Push: {e}")
@@ -169,7 +175,7 @@ class StackPage(ttk.Frame):
     def pop_node(self):
         try:
             popped_value = self.stack.pop()
-            self.main_app.log_output(f"Popped '{popped_value}' from the stack.")
+            self.main_app.log_output(f"Popped {popped_value} from the stack.")
             self.update_representation()
         except StackUnderflowError as e:
             self.main_app.log_output(f"Failed to Pop: {e}")
@@ -178,8 +184,8 @@ class StackPage(ttk.Frame):
     def peek_node(self):
         try:
             peek_value = self.stack.peek()
-            messagebox.showinfo("Peek Result", f"The top element is '{peek_value}'.")
-            self.main_app.log_output(f"Peeked: Top element is '{peek_value}'.")
+            messagebox.showinfo("Peek Result", f"The top element is {peek_value}.")
+            self.main_app.log_output(f"Peeked: Top element is {peek_value}.")
         except StackUnderflowError:
             self.main_app.log_output("Peeked: Stack is empty.")
             self.show_error_image_window("Stack Underflow", "The stack is empty. Nothing to peek at.", self.underflow_img_tk)
@@ -191,13 +197,13 @@ class StackPage(ttk.Frame):
             messagebox.showwarning("Input Error", "Please enter a value to search for.")
             return
 
-        position = self.stack.search(value)
+        position = self.stack.search(int(value)) # Convert to int for searching
 
         if position is not None:
-            messagebox.showinfo("Search Result", f"Element '{value}' found at position {position} from the top.")
-            self.main_app.log_output(f"Search: Found '{value}' at position {position}.")
+            messagebox.showinfo("Search Result", f"Element {value} found at position {position} from the top.")
+            self.main_app.log_output(f"Search: Found {value} at position {position}.")
         else:
-            messagebox.showinfo("Search Result", f"Element '{value}' not found in the stack.")
+            messagebox.showinfo("Search Result", f"Element {value} not found in the stack.")
             self.main_app.log_output(f"Search: '{value}' not found.")
 
     def show_size(self):
@@ -250,6 +256,13 @@ class StackPage(ttk.Frame):
             self.canvas.config(scrollregion=(0, 0, bbox[2] + 150, bbox[3] + 50)) # Add padding
         else:
             self.canvas.config(scrollregion=(0, 0, 1, 1))
+
+    def _validate_numeric_input(self, P):
+        """Validates that the input is a digit or an empty string."""
+        if P.isdigit() or P == "":
+            return True
+        self.bell() # Audible feedback for invalid input
+        return False
 
     def _load_error_image(self, filename, size=(100, 100)):
         """Loads and resizes an image, returning an ImageTk.PhotoImage object."""

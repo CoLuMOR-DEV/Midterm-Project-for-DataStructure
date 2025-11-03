@@ -45,15 +45,15 @@ class SinglyLinkedList:
             return False
         prev.next = temp.next
         return True
-    def reverse(selfs):
+    def reverse(self):
         prev = None
-        current = selfs.head
+        current = self.head
         while current:
             next_node = current.next
             current.next = prev
             prev = current
             current = next_node
-        selfs.head = prev
+        self.head = prev
     def to_list(self):
         nodes = []
         curr = self.head
@@ -377,8 +377,6 @@ class MainApp(tk.Tk):
         self.sll = SinglyLinkedList(self)
         self.dll = DoublyLinkedList(self)
         self.cll = CircularLinkedList(self)
-        # Add stack model when stack_page is integrated
-        # self.stack = Stack() 
 
         # --- Theme/Style Management ---
         self.current_theme = "light"
@@ -402,14 +400,16 @@ class MainApp(tk.Tk):
         except tk.TclError:
             pass
 
-        self.current_page_frame = None # Holds the active page
+        self.pages = {} # Dictionary to hold all page frames
+        self.current_page_name = None # To track the active page
 
+        self.log_text = None # Initialize log_text to None
         self.create_widgets()
         self.apply_theme(self.current_theme)
         
         # Start on the List page
         self.switch_page("list") 
-        self.log_output("Application started.")
+        # self.log_output("Application started.") # Log is called in switch_page
 
     def create_widgets(self):
         self.vertical_paned_window = ttk.PanedWindow(self, orient=tk.VERTICAL)
@@ -420,6 +420,11 @@ class MainApp(tk.Tk):
         self.vertical_paned_window.add(self.top_frame_container, weight=3)
         self.top_frame_container.grid_rowconfigure(0, weight=1)
         self.top_frame_container.grid_columnconfigure(0, weight=1)
+
+        # --- Create all pages at startup and store them ---
+        self.pages["list"] = LinkedListPage(self.top_frame_container, self)
+        self.pages["recursion"] = RecursionPage(self.top_frame_container, self)
+        self.pages["stack"] = StackPage(self.top_frame_container, self)
 
 
         # --- Bottom Frame (Log & Themes) ---
@@ -444,34 +449,36 @@ class MainApp(tk.Tk):
         self.dark_mode_btn.pack(pady=5, fill=tk.X)
 
     def switch_page(self, page_name):
-        """Destroys the current page frame and builds the new one."""
+        """Hides the current page and shows the selected one, preserving state."""
         
-        # Destroy the currently active page frame
-        if self.current_page_frame:
-            self.current_page_frame.destroy()
+        # Hide the current page if it exists
+        if self.current_page_name and self.current_page_name in self.pages:
+            current_page = self.pages[self.current_page_name]
+            current_page.grid_remove() # Hide it from view
+
+        # Show the new page
+        new_page = self.pages.get(page_name)
+        if new_page:
+            self.current_page_name = page_name
+            new_page.grid(row=0, column=0, sticky="nsew")
+            self.apply_theme_to_page() # Ensure theme is correct on switch
 
         if page_name == "list":
-            self.current_page_frame = LinkedListPage(self.top_frame_container, self)
             self.log_output("Switched to List (Linked List) view.")
         elif page_name == "recursion":
-            self.current_page_frame = RecursionPage(self.top_frame_container, self)
             self.log_output("Switched to Recursion view.")
         elif page_name == "stack":
-            self.current_page_frame = StackPage(self.top_frame_container, self)
             self.log_output("Switched to Stack view.")
-            
-        # Place the new frame in the container
-        if self.current_page_frame:
-            self.current_page_frame.grid(row=0, column=0, sticky="nsew")
-            # Apply theme to the newly created page
-            self.apply_theme_to_page()
 
     def log_output(self, message):
         """Adds a message to the log output area."""
-        self.log_text.config(state=tk.NORMAL)
-        self.log_text.insert(tk.END, f"[{time.strftime('%H:%M:%S')}] {message}\n")
-        self.log_text.see(tk.END)
-        self.log_text.config(state=tk.DISABLED)
+        if self.log_text:
+            self.log_text.config(state=tk.NORMAL)
+            self.log_text.insert(tk.END, f"[{time.strftime('%H:%M:%S')}] {message}\n")
+            self.log_text.see(tk.END)
+            self.log_text.config(state=tk.DISABLED)
+        else:
+            print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
     def apply_theme(self, theme_name):
         """Applies the selected theme to all widgets."""
@@ -484,20 +491,18 @@ class MainApp(tk.Tk):
         self.config(bg=self.theme["bg"])
 
         self._configure_ttk_styles()
-        
-        # Apply to main widgets
         self.log_text.config(bg=self.theme["log_bg"], fg=self.theme["log_fg"],
                               insertbackground=self.theme["fg"])
-
-        # Apply to the active page
         self.apply_theme_to_page()
             
         self.log_output(f"Switched to {theme_name.capitalize()} Mode.")
 
     def apply_theme_to_page(self):
         """Helper function to apply theme to the current page if it exists."""
-        if self.current_page_frame and hasattr(self.current_page_frame, 'apply_theme'):
-            self.current_page_frame.apply_theme()
+        pages_to_theme = self.pages.values() if not self.current_page_name else [self.pages[self.current_page_name]]
+        for page in pages_to_theme:
+            if hasattr(page, 'apply_theme'):
+                page.apply_theme()
 
     def _configure_ttk_styles(self):
         """Configures all ttk styles based on the current theme."""
@@ -531,8 +536,6 @@ class MainApp(tk.Tk):
         self.style.configure("TNotebook", background=self.theme["bg"], borderwidth=0)
         self.style.configure("TNotebook.Tab", background=self.theme["btn_bg"], foreground=self.theme["btn_fg"], padding=[10, 5])
         
-        # --- THIS IS THE CORRECTED LINE ---
-        # The glitch was caused by ("active", "active")
         self.style.map("TNotebook.Tab",
                         background=[("selected", self.theme["accent"]), ("active", self.theme["accent_active"])],
                         foreground=[("selected", self.theme["btn_fg"]), ("active", self.theme["btn_fg"])]) 
@@ -566,12 +569,9 @@ def main():
                                   bg_color="#1C1C1C", fg_color="white")
             
             def update_splash_state():
-                # Check if the music is still playing
                 if pygame.mixer.get_init() and pygame.mixer.music.get_busy():
-                    # If it is, apply effects
                     splash.shake()
                     splash.glitch()
-                    # If it is, check again in 100ms
                     app.after(50, update_splash_state)
                 else:
                     if pygame.mixer.get_init():
